@@ -62,14 +62,15 @@ module VagrantPlugins
             o.separator ''
           end
           argv = parse_options(opts)
-          return argv if argv and argv.length == 2
+          return argv if argv && argv.length == 2
+
           @env.ui.info(opts.help, prefix: false) if argv
           return nil, nil
         end
 
         def host
-          host = [@file1, @file2].map{|file_spec| file_spec.match(/^([^:]*):/)[1] rescue nil}.compact.first
-          host = nil if (host.nil? || host == '' || host == 0 )
+          host = [@file1, @file2].map{ | file_spec | file_spec.match(/^([^:]*):/)[1] rescue nil }.compact.first
+          host = nil if (host.nil? || host == '' || host.zero?)
           host
         end
 
@@ -101,7 +102,6 @@ module VagrantPlugins
           !@file2.end_with?(':')
         end
       end
-
     end
   end
 end
