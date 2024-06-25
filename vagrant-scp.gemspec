@@ -5,13 +5,13 @@ Encoding.default_external = Encoding::UTF_8
 require File.expand_path('lib/vagrant-scp-sync/version', __dir__)
 
 Gem::Specification.new do |spec|
-  spec.name          = "vagrant-scp-sync"
+  spec.name          = 'vagrant-scp-sync'
   spec.version       = Vagrant::ScpSync::VERSION
-  spec.authors       = ["Mark Gilbert"]
-  spec.email         = ["Mark.Gilbert@prominic.net"]
+  spec.authors       = ['Mark Gilbert']
+  spec.email         = ['Mark.Gilbert@prominic.net']
   spec.summary       = 'Copy files to a Vagrant VM via SCP.'
   spec.description   = spec.summary
-  spec.homepage      = "https://github.com/STARTCloud/vagrant-scp-sync"
+  spec.homepage      = 'https://github.com/STARTCloud/vagrant-scp-sync'
   spec.license       = 'AGPL-3.0'
   spec.metadata = {
     'rubygems_mfa_required' => 'true',
@@ -33,7 +33,6 @@ Gem::Specification.new do |spec|
   spec.add_runtime_dependency 'iniparse', '~> 1.0'
   spec.add_runtime_dependency 'log4r', '~> 1.1'
   spec.add_runtime_dependency 'netaddr', '~> 2.0', '>= 2.0.4'
+  spec.add_runtime_dependency 'net-scp', '>= 1.1'
   spec.add_runtime_dependency 'ruby_expect', '~> 1.7', '>= 1.7.5'
-  spec.add_runtime_dependency 'net-scp', ">= 1.1"
-
 end

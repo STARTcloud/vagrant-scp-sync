@@ -15,11 +15,10 @@ module VagrantPlugins
         Copy files to vagrant boxes via scp
       DESC
 
-      command "scp" do
+      command 'scp' do
         require_relative 'commands/scp.rb'
         Command::ScpSync
       end
     end
-
   end
 end
