@@ -1,11 +1,5 @@
 # frozen_string_literal: true
 
-begin
-  require 'vagrant'
-rescue LoadError
-  raise 'The vagrant-scp-sync plugin must be run within Vagrant.'
-end
-
 module VagrantPlugins
   module ScpSync
     # This defines the class for the plugin vagrant-scp-sync
