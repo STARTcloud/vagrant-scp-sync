@@ -1,0 +1,5 @@
+en:
+  vagrant_scp_sync:
+    errors:
+      not_yet_implemented: |-
+        Configuration is not yet implemented
