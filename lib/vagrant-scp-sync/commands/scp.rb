@@ -3,10 +3,9 @@
 require 'pathname'
 
 module VagrantPlugins
-  module Scp_Sync
+  module ScpSync
     module Command
-
-      class Scp_Sync < Vagrant.plugin(2, :command)
+      class ScpSync < Vagrant.plugin(2, :command)
 
         def self.synopsis
           "copies data into a box via SCP"

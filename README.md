@@ -1,4 +1,4 @@
-# Vagrant::Scp_Sync
+# Vagrant::ScpSync
 
 Copy files to a Vagrant guest via SCP.
 

@@ -7,7 +7,7 @@ rescue LoadError
 end
 
 module VagrantPlugins
-  module Scp_Sync
+  module ScpSync
     # This defines the class for the plugin vagrant-scp-sync
     class Plugin < Vagrant.plugin('2')
       name 'vagrant-scp-sync'
@@ -17,7 +17,7 @@ module VagrantPlugins
 
       command "scp" do
         require_relative 'commands/scp.rb'
-        Command::Scp_Sync
+        Command::ScpSync
       end
     end
 

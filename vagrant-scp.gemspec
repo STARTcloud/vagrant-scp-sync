@@ -6,7 +6,7 @@ require File.expand_path('lib/vagrant-scp-sync/version', __dir__)
 
 Gem::Specification.new do |spec|
   spec.name          = "vagrant-scp-sync"
-  spec.version       = Vagrant::Scp_Sync::VERSION
+  spec.version       = Vagrant::ScpSync::VERSION
   spec.authors       = ["Mark Gilbert"]
   spec.email         = ["Mark.Gilbert@prominic.net"]
   spec.summary       = 'Copy files to a Vagrant VM via SCP.'
