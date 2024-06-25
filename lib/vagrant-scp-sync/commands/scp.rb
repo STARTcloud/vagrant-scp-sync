@@ -1,10 +1,12 @@
+# frozen_string_literal: true
+
 require 'pathname'
 
 module VagrantPlugins
-  module Scp
+  module Scp_Sync
     module Command
 
-      class Scp < Vagrant.plugin(2, :command)
+      class Scp_Sync < Vagrant.plugin(2, :command)
 
         def self.synopsis
           "copies data into a box via SCP"
@@ -38,8 +40,9 @@ module VagrantPlugins
               "-o StrictHostKeyChecking=no",
               "-o UserKnownHostsFile=/dev/null",
               "-o port=#{@ssh_info[:port]}",
+              "-o LogLevel=ERROR",
               proxy_command,
-              "-i '#{@ssh_info[:private_key_path][0]}'",
+              @ssh_info[:private_key_path].map { |k| "-i '#{k}'" }.join(" "),
               source,
               target
             ].join(' ')
