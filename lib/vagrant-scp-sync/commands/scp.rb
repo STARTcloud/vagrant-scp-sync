@@ -28,11 +28,11 @@ module VagrantPlugins
               source = "#{user_at_host}:'#{source_files}'"
             end
 
-            if @ssh_info[:proxy_command]
-              proxy_command = "-o ProxyCommand='#{@ssh_info[:proxy_command]}'"
-            else
-              proxy_command = ''
-            end
+            proxy_command = if @ssh_info[:proxy_command]
+                              "-o ProxyCommand='#{@ssh_info[:proxy_command]}'"
+                            else
+                              ''
+                            end
 
             command = [
               'scp',
@@ -65,14 +65,16 @@ module VagrantPlugins
           return argv if argv && argv.length == 2
 
           @env.ui.info(opts.help, prefix: false) if argv
-          return nil, nil
+          [nil, nil]
         end
 
-        def host
-          host = [@file1, @file2].map{ | file_spec | file_spec.match(/^([^:]*):/)[1] rescue nil }.compact.first
-          host = nil if (host.nil? || host == '' || host.zero?)
-          host
-        end
+        host = [@file1, @file2].map do |file_spec|
+          begin
+            file_spec.match(/^([^:]*):/)[1]
+          rescue
+            nil
+          end
+        end.compact.first
 
         def net_ssh_command
           @file1.include?(':') ? :download! : :upload!

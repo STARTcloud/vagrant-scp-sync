@@ -16,7 +16,7 @@ module VagrantPlugins
       DESC
 
       command 'scp' do
-        require_relative 'commands/scp.rb'
+        require_relative 'commands/scp'
         Command::ScpSync
       end
     end
