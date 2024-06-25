@@ -70,13 +70,10 @@ module VagrantPlugins
 
         def host
           host = [@file1, @file2].map do |file_spec|
-            begin
-              file_spec.match(/^([^:]*):/)[1]
-            rescue
-              nil
-            end
+            file_spec.match(/^([^:]*):/)[1]
+          rescue NoMethodError
+            nil
           end.compact.first
-        
           host = nil if host.nil? || host == '' || host.zero?
           host
         end
