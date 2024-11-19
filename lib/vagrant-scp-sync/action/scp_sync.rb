@@ -21,7 +21,9 @@ module VagrantPlugins
         opts[:owner] ||= ssh_info[:username]
         opts[:group] ||= ssh_info[:username]
         username = ssh_info[:username]
+        port = ssh_info[:port]
         host = ssh_info[:host]
+        private_key_path = ssh_info[:private_key_path].map { |k| "-i '#{k}'" }.join(' ')
 
         if opts[:direction] == :upload || opts[:direction].nil?
           source = "'#{source_files}'"
@@ -36,9 +38,9 @@ module VagrantPlugins
           '-r',
           '-o StrictHostKeyChecking=no',
           '-o UserKnownHostsFile=/dev/null',
-          "-o port=#{@ssh_info[:port]}",
+          "-o port=#{port}",
           '-o LogLevel=ERROR',
-          @ssh_info[:private_key_path].map { |k| "-i '#{k}'" }.join(' '),
+          private_key_path,
           source,
           target
         ].join(' ')
