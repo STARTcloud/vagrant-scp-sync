@@ -6,7 +6,7 @@ module VagrantPlugins
   module ScpSync
     module Command
       # This class defines SCPSync
-      class ScpSync < Vagrant.plugin(2, :command)
+      class ScpSync < Vagrant.plugin('2', :command)
         def self.synopsis
           'Copies data into a box via SCP'
         end

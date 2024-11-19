@@ -31,11 +31,12 @@ module VagrantPlugins
 
       def enable(machine, folders, _opts)
         ssh_info = machine.ssh_info
-
+        scp_path = Which.which('scp')
+        whoami_path = Which.which('whoami')
         machine.ui.warn(I18n.t('vagrant.scp_ssh_password')) if ssh_info[:private_key_path].empty? && ssh_info[:password]
-
+        
         folders.each_value do |folder_opts|
-          ScpSyncHelper.scp_single(machine, folder_opts)
+          ScpSyncHelper.scp_single(machine, folder_opts, scp_path, whoami_path)
         end
       end
     end

@@ -1,17 +1,83 @@
 en:
   vagrant_scp_sync:
+    action:
+      scp_sync_folder: |-
+        Syncing Folder
+
+        Target Files: %{target_files}
+        Source Files: %{source_files}
+        Full command:
+        %{command}
+      scp_change_ownership_folder: |-
+        Changing Folder Ownerhip
+
+        Target Files: %{target_files}
+        Source Files: %{source_files}
+        Full command:
+        %{command}
+      scp_change_permissions_folder: |-
+        Changing Folder Permissions
+
+        Target Files: %{target_files}
+        Source Files: %{source_files}
+        Full command:
+        %{command}
+      scp_remove_folder: |-
+        Removing Folder
+
+        Target Files: %{target_files}
+        Source Files: %{source_files}
+        Full command:
+        %{command}
+      scp_make_folder: |-
+        Making Folder
+
+        Target Files: %{target_files}
+        Full command:
+        %{command}
     errors:
       not_yet_implemented: |-
         Configuration is not yet implemented
+      scp_sync_error_delete_directory: |-
+        There was an error when attemping to delete the directory for SCP Sync.
+        Target Files: %{target_files}
+
+        Error: %{stderr}
+        Full command causing error:
+        %{command}
+
+      scp_sync_error_change_ownership_directory: |-
+        There was an error when attemping to change the ownership of the directory for SCP Sync.
+        Target Files: %{target_files}
+
+        Error: %{stderr}
+        Full command causing error:
+        %{command}
+
+      scp_sync_error_change_permissions_directory: |-
+        There was an error when attemping to change the permissions of the directory for SCP Sync.
+        Target Files: %{target_files}
+
+        Error: %{stderr}
+        Full command causing error:
+        %{command}
+
+      scp_sync_error_make_directory: |-
+        There was an error when attemping to create the directory for SCP Sync.
+        Target Files: %{target_files}
+
+        Error: %{stderr}
+        Full command causing error:
+        %{command}
 
       scp_sync_error: |-
         There was an error when attemping to sync folders using scp.
         Please inspect the error message below for more info.
 
-        Host path: %{hostpath}
-        Guest path: %{guestpath}
+        Source Files: %{source_files}
+        Target Files: %{target_files}
         Error: %{stderr}
-        Full command causing error: 
+        Full command causing error:
         %{command}
 
       scp_installed_error: |-
