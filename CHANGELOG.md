@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.5.10](https://github.com/STARTcloud/vagrant-scp-sync/compare/v0.5.9...v0.5.10) (2024-11-19)
+
+
+### Bug Fixes
+
+* synced folders refernce ([1510860](https://github.com/STARTcloud/vagrant-scp-sync/commit/15108609d9424f72046035762b1991d7318ccdf1))
+
 ## [0.5.9](https://github.com/STARTcloud/vagrant-scp-sync/compare/v0.5.8...v0.5.9) (2024-11-19)
 
 
