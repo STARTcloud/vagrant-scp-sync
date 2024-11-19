@@ -33,25 +33,6 @@ module VagrantPlugins
         I18n.load_path << File.expand_path('locales/en.yml', ScpSync.source_root)
         I18n.reload!
       end
-
-      def self.setup_logging
-        require 'log4r'
-
-        level = nil
-        begin
-          level = Log4r.const_get(ENV['VAGRANT_LOG'].upcase)
-        rescue NameError
-          level = nil
-        end
-
-        level = nil unless level.is_a?(Integer)
-
-        return unless level
-
-        logger = Log4r::Logger.new('vagrant_scp_sync')
-        logger.outputters = Log4r::Outputter.stderr
-        logger.level = level
-      end
     end
   end
 end
