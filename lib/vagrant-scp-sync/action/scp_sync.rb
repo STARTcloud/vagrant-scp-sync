@@ -22,11 +22,6 @@ module VagrantPlugins
         opts[:group] ||= ssh_info[:username]
         username = ssh_info[:username]
         host = ssh_info[:host]
-        proxy_command = if @ssh_info[:proxy_command]
-                          "-o ProxyCommand='#{@ssh_info[:proxy_command]}' "
-                        else
-                          ''
-                        end
 
         if opts[:direction] == :upload || opts[:direction].nil?
           source = "'#{source_files}'"
@@ -43,7 +38,6 @@ module VagrantPlugins
           '-o UserKnownHostsFile=/dev/null',
           "-o port=#{@ssh_info[:port]}",
           '-o LogLevel=ERROR',
-          proxy_command,
           @ssh_info[:private_key_path].map { |k| "-i '#{k}'" }.join(' '),
           source,
           target
