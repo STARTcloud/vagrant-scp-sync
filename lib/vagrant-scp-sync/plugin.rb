@@ -46,12 +46,12 @@ module VagrantPlugins
 
         level = nil unless level.is_a?(Integer)
 
-        if level
-          logger = Log4r::Logger.new('vagrant_scp_sync')
-          logger.outputters = Log4r::Outputter.stderr
-          logger.level = level
-          logger = nil
-        end
+        return unless level
+
+        logger = Log4r::Logger.new('vagrant_scp_sync')
+        logger.outputters = Log4r::Outputter.stderr
+        logger.level = level
+        logger = nil
       end
     end
   end
