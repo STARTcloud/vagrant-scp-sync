@@ -55,16 +55,16 @@ module VagrantPlugins
         machine.ui.info(I18n.t('vagrant.scp_folder', source_files: source_files, target_files: target_files))
 
         command += [command_opts]
-        
+
         r = Vagrant::Util::Subprocess.execute(*command)
-        
-        unless r.exit_code == 0
-          raise Vagrant::Errors::SyncedFolderScpSyncError,
-                command: command.inspect,
-                source_files: source_files,
-                target_files: target_files,
-                stderr: r.stderr
-        end
+
+        return if r.exit_code.zero?
+
+        raise Vagrant::Errors::SyncedFolderScpSyncError,
+              command: command.inspect,
+              source_files: source_files,
+              target_files: target_files,
+              stderr: r.stderr
       end
     end
   end
