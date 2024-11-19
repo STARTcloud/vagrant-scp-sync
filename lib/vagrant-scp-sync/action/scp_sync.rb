@@ -11,171 +11,98 @@ module VagrantPlugins
         ssh_info = machine.ssh_info
         raise Vagrant::Errors::SSHNotReady if ssh_info.nil?
 
-        original_source_files = opts[:map]
-        has_trailing_slash_source_files = original_source_files.end_with?('/')
-        source_files = File.expand_path(original_source_files, machine.env.root_path)
-        source_files = Vagrant::Util::Platform.fs_real_path(source_files).to_s
-        source_files = Vagrant::Util::Platform.cygwin_path(source_files) if Vagrant::Util::Platform.windows?
-        sync_source_files = source_files
-        sync_source_files += '/*' if has_trailing_slash_source_files
-        
-        original_target_files = opts[:to]
-        has_trailing_slash_target_files = original_target_files.end_with?('/')
-        target_files = File.expand_path(original_target_files, machine.env.root_path)
-        target_files = Vagrant::Util::Platform.fs_real_path(target_files).to_s
-        target_files = Vagrant::Util::Platform.cygwin_path(target_files) if Vagrant::Util::Platform.windows?
-        sync_target_files = target_files
-        sync_target_files += '/*' if has_trailing_slash_target_files
-        
+        source_files = expand_path(opts[:map], machine)
+        has_trailing_slash_source = opts[:map].end_with?('/')
+        sync_source_files = append_wildcard(source_files, has_trailing_slash_source)
+
+        target_files = expand_path(opts[:to], machine)
+        has_trailing_slash_target = opts[:to].end_with?('/')
+        sync_target_files = append_wildcard(target_files, has_trailing_slash_target)
+
         opts[:owner] ||= ssh_info[:username]
         opts[:group] ||= ssh_info[:username]
-        username = ssh_info[:username]
-        port = ssh_info[:port]
-        host = ssh_info[:host]
-        private_key_path = ssh_info[:private_key_path].map { |k| "-i #{k}" }.join(' ')
 
-        args = nil
-        args = Array(opts[:scp__args]).dup if opts[:scp__args]
-        args ||= ["--verbose"]
+        ssh_opts = build_ssh_options(ssh_info)
+        scp_opts = build_scp_options(opts)
 
-        delete = false 
-        delete = true if args.include?("--delete")
+        delete = scp_opts.include?('--delete')
 
         if opts[:direction] == :upload || opts[:direction].nil?
           source = sync_source_files
-          target = "#{username}@#{host}:#{target_files}"
-          make_dir = [
-            'ssh',
-            '-o StrictHostKeyChecking=no',
-            '-o UserKnownHostsFile=/dev/null',
-            "-o port=#{port}",
-            '-o LogLevel=ERROR',
-            private_key_path,
-            "#{username}@#{host}",
-            "sudo mkdir -p #{target_files}"
-          ].join(' ')
-          change_ownership = [
-            'ssh',
-            '-o StrictHostKeyChecking=no',
-            '-o UserKnownHostsFile=/dev/null',
-            "-o port=#{port}",
-            '-o LogLevel=ERROR',
-            private_key_path,
-            "#{username}@#{host}",
-            "sudo chown -R #{opts[:owner]}:#{opts[:group]} #{target_files}"
-          ].join(' ')
-          change_permissions = [
-            'ssh',
-            '-o StrictHostKeyChecking=no',
-            '-o UserKnownHostsFile=/dev/null',
-            "-o port=#{port}",
-            '-o LogLevel=ERROR',
-            private_key_path,
-            "#{username}@#{host}",
-            "sudo chmod 777 #{target_files}"
-          ].join(' ')
-          remove_dir = [
-            'ssh',
-            '-o StrictHostKeyChecking=no',
-            '-o UserKnownHostsFile=/dev/null',
-            "-o port=#{port}",
-            '-o LogLevel=ERROR',
-            private_key_path,
-            "#{username}@#{host}",
-            "sudo rm -rf #{target_files}"
-          ].join(' ')
-
+          target = "#{ssh_info[:username]}@#{ssh_info[:host]}:#{target_files}"
+          make_dir = build_ssh_command(ssh_opts, "sudo mkdir -p #{target_files}", ssh_info)
+          change_ownership = build_ssh_command(ssh_opts, "sudo chown -R #{opts[:owner]}:#{opts[:group]} #{target_files}", ssh_info)
+          change_permissions = build_ssh_command(ssh_opts, "sudo chmod 777 #{target_files}", ssh_info)
+          remove_dir = build_ssh_command(ssh_opts, "sudo rm -rf #{target_files}", ssh_info)
         elsif opts[:direction] == :download
-          source = "#{username}@#{host}:#{sync_source_files}"
+          source = "#{ssh_info[:username]}@#{ssh_info[:host]}:#{sync_source_files}"
           target = target_files
-          make_dir = [
-            "mkdir -p #{target_files}"
-          ].join(' ')
+          make_dir = "mkdir -p #{target_files}"
         end
 
-        synchronize = [
-          scp_path,
-          " -r",
-          "-o StrictHostKeyChecking=no",
-          "-o UserKnownHostsFile=/dev/null",
-          "-o port=#{port}",
-          "-o LogLevel=ERROR",
-          private_key_path,
-          source,
-          target
-        ].join(' ')
+        synchronize = build_scp_command(scp_path, ssh_opts, source, target)
 
-        command = [
-          'sh', '-c', remove_dir
+        execute_command(machine, remove_dir, delete, 'scp_remove_folder', opts)
+        execute_command(machine, make_dir, true, 'scp_make_folder', opts)
+        execute_command(machine, change_ownership, true, 'scp_change_ownership_folder', opts)
+        execute_command(machine, change_permissions, true, 'scp_change_permissions_folder', opts)
+        execute_command(machine, synchronize, true, 'scp_sync_folder', opts)
+      end
+
+      private
+
+      def self.expand_path(path, machine)
+        expanded_path = File.expand_path(path, machine.env.root_path)
+        Vagrant::Util::Platform.fs_real_path(expanded_path).to_s
+      end
+
+      def self.append_wildcard(path, has_trailing_slash)
+        has_trailing_slash ? "#{path}/*" : path
+      end
+
+      def self.build_ssh_options(ssh_info)
+        opts = %w[
+          -o StrictHostKeyChecking=no
+          -o UserKnownHostsFile=/dev/null
+          -o LogLevel=ERROR
         ]
+        opts << "-o port=#{ssh_info[:port]}"
+        opts << ssh_info[:private_key_path].map { |k| "-i #{k}" }.join(' ')
+        opts
+      end
 
-        machine.ui.info(I18n.t('vagrant_scp_sync.action.scp_remove_folder', source_files: source_files, target_files: target_files, command: remove_dir.inspect)) if delete
-        rmdir = Vagrant::Util::Subprocess.execute(*command) if delete
+      def self.build_scp_options(opts)
+        opts[:scp__args] ? Array(opts[:scp__args]).dup : ['--verbose']
+      end
 
-        command = [
-          'sh', '-c', make_dir
-        ]
+      def self.build_ssh_command(ssh_opts, command, ssh_info)
+        ['ssh', *ssh_opts, "#{ssh_info[:username]}@#{ssh_info[:host]}", command].join(' ')
+      end
 
-        machine.ui.info(I18n.t('vagrant_scp_sync.action.scp_make_folder', source_files: source_files, target_files: target_files, command: make_dir.inspect))
-        mkdir = Vagrant::Util::Subprocess.execute(*command)
+      def self.build_scp_command(scp_path, ssh_opts, source, target)
+        [scp_path, '-r', *ssh_opts, source, target].join(' ')
+      end
 
-        command = [
-          'sh', '-c', change_ownership
-        ]
+      def self.execute_command(machine, command, raise_error, message_key, opts)
+        return if command.nil?
+      
+        machine.ui.info(
+          I18n.t(
+            "vagrant_scp_sync.action.#{message_key}",
+            command: command,
+            target_files: opts[:to],
+            source_files: opts[:map]
+          )
+        )
+        result = Vagrant::Util::Subprocess.execute('sh', '-c', command)
+      
+        raise_scp_error(message_key, command, result.stderr) if raise_error && !result.exit_code.zero?
+      end
 
-        machine.ui.info(I18n.t('vagrant_scp_sync.action.scp_change_ownership_folder', source_files: source_files, target_files: target_files, command: change_ownership.inspect))
-        chown = Vagrant::Util::Subprocess.execute(*command)
-
-        command = [
-          'sh', '-c', change_permissions
-        ]
-
-        machine.ui.info(I18n.t('vagrant_scp_sync.action.scp_change_permissions_folder', source_files: source_files, target_files: target_files, command: change_permissions.inspect))
-        chmod = Vagrant::Util::Subprocess.execute(*command)
-
-        command = [
-          'sh', '-c', synchronize
-        ]
-
-        machine.ui.info(I18n.t('vagrant_scp_sync.action.scp_sync_folder', source_files: source, target_files: target, command: synchronize.inspect))
-        sync = Vagrant::Util::Subprocess.execute(*command)
-
-        if delete
-          return if rmdir.exit_code.zero? && mkdir.exit_code.zero? && chmod.exit_code.zero? && chown.exit_code.zero? && sync.exit_code.zero?
-
-          raise Errors::SyncedFolderScpSyncDeleteDirError,
-                command: remove_dir.inspect,
-                source_files: source_files,
-                target_files: target_files,
-                stderr: rmdir.stderr unless rmdir.exit_code.zero?
-        else
-          return if mkdir.exit_code.zero? && chmod.exit_code.zero? && chown.exit_code.zero? && sync.exit_code.zero?
-        end
-        
-        raise Errors::SyncedFolderScpSyncMakeDirError,
-              command: make_dir.inspect,
-              source_files: source_files,
-              target_files: target_files,
-              stderr: mkdir.stderr unless mkdir.exit_code.zero?
-
-        raise Errors::SyncedFolderScpSyncChangePermissionsDirError,
-              command: change_permissions.inspect,
-              source_files: source_files,
-              target_files: target_files,
-              stderr: chmod.stderr unless chmod.exit_code.zero?
-
-        raise Errors::SyncedFolderScpSyncChangeOwnershipDirError,
-              command: change_ownership.inspect,
-              source_files: source_files,
-              target_files: target_files,
-              stderr: chown.stderr unless chown.exit_code.zero?
-
-        raise Errors::SyncedFolderScpSyncError,
-              command: synchronize.inspect,
-              source_files: source_files,
-              target_files: target_files,
-              stderr: sync.stderr unless sync.exit_code.zero?
-
+      def self.raise_scp_error(message_key, command, stderr)
+        raise Errors.const_get("SyncedFolderScpSync#{message_key.split('_').map(&:capitalize).join}Error"),
+              command: command,
+              stderr: stderr
       end
     end
   end
