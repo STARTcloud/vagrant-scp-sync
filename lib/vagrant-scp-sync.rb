@@ -5,9 +5,10 @@ require 'vagrant-scp-sync/plugin'
 require 'vagrant-scp-sync/errors'
 
 module VagrantPlugins
-    module ScpSync
-      def self.source_root
-        @source_root ||= Pathname.new(File.expand_path("../../", __FILE__))
-      end
+  # This is used to SCP files to/from Guests and Hosts
+  module ScpSync
+    def self.source_root
+      @source_root ||= Pathname.new(File.expand_path('..', __dir__))
     end
   end
+end
