@@ -3,3 +3,16 @@ en:
     errors:
       not_yet_implemented: |-
         Configuration is not yet implemented
+
+      scp_sync_error: |-
+        There was an error when attemping to sync folders using scp.
+        Please inspect the error message below for more info.
+
+        Host path: %{hostpath}
+        Guest path: %{guestpath}
+        Error: %{stderr}
+        Full command causing error: 
+        %{command}
+
+      scp_installed_error: |-
+        SCP was not detected as installed
