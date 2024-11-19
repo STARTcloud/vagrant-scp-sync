@@ -18,7 +18,6 @@ module VagrantPlugins
       DESC
 
       command 'scp' do
-        setup_logging
         setup_i18n
         require_relative 'command'
         Command
