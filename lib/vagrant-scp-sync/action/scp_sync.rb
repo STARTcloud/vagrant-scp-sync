@@ -37,24 +37,24 @@ module VagrantPlugins
         end
 
         command = [
-                    'scp',
-                    '-r',
-                    '-o StrictHostKeyChecking=no',
-                    '-o UserKnownHostsFile=/dev/null',
-                    "-o port=#{@ssh_info[:port]}",
-                    '-o LogLevel=ERROR',
-                    proxy_command,
-                    @ssh_info[:private_key_path].map { |k| "-i '#{k}'" }.join(' '),
-                    source,
-                    target
-                  ].join(' ')
+          'scp',
+          '-r',
+          '-o StrictHostKeyChecking=no',
+          '-o UserKnownHostsFile=/dev/null',
+          "-o port=#{@ssh_info[:port]}",
+          '-o LogLevel=ERROR',
+          proxy_command,
+          @ssh_info[:private_key_path].map { |k| "-i '#{k}'" }.join(' '),
+          source,
+          target
+        ].join(' ')
 
         command_opts = {}
         command_opts[:workdir] = machine.env.root_path.to_s
 
         machine.ui.info(I18n.t('vagrant.scp_folder', source_files: source_files, target_files: target_files))
 
-        command = command + [command_opts]
+        command += [command_opts]
 
         r = Vagrant::Util::Subprocess.execute(*command)
         if r.exit_code != 0

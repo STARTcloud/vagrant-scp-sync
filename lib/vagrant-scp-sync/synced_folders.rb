@@ -9,7 +9,7 @@ require_relative 'action/scp_sync'
 module VagrantPlugins
   module ScpSync
     # This Class prepares the environment for SCP Sync
-    class SyncedFolder < Vagrant.plugin("2", :synced_folder)
+    class SyncedFolder < Vagrant.plugin('2', :synced_folder)
       include Vagrant::Util
 
       def initialize(*args)

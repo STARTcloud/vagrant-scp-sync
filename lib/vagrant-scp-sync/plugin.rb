@@ -6,9 +6,7 @@ rescue LoadError
   raise 'The vagrant-scp-sync plugin must be run within Vagrant.'
 end
 
-if Vagrant::VERSION < '2'
-  raise 'The vagrant-scp-sync plugin is only compatible with Vagrant 2+'
-end
+raise 'The vagrant-scp-sync plugin is only compatible with Vagrant 2+' if Vagrant::VERSION < '2'
 
 module VagrantPlugins
   module ScpSync
