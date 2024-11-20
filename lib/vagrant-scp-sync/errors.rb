@@ -14,7 +14,7 @@ module VagrantPlugins
       class SyncedFolderScpSyncError < VagrantScpSyncError
         error_key(:scp_sync_error, 'vagrant_scp_sync.errors')
       end
-      
+
       # This Class denotes Delete Dir Errors for SCP Sync
       class SyncedFolderScpSyncDeleteDirError < VagrantScpSyncError
         error_key(:scp_sync_error_delete_directory, 'vagrant_scp_sync.errors')

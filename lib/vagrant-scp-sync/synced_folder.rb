@@ -18,12 +18,12 @@ module VagrantPlugins
         @logger = Log4r::Logger.new('vagrant_scp_sync')
       end
 
-      def usable?(_machine, raise_error=false)
+      def usable?(machine, *args)
         scp_path = Which.which('scp')
         return true if scp_path
-
-        return false unless raise_error
-
+      
+        return false unless args.include?(:raise_error) && args[:raise_error]
+      
         raise Vagrant::Errors::SCPNotFound
       end
 
