@@ -1,7 +1,7 @@
 en:
   vagrant_scp_sync:
     action:
-      scp_sync_files: "Syncing files: %{source_files} ==> %{target_files}"
+      scp_sync_folder: "Syncing files: %{source_files} ==> %{target_files}"
     errors:
       not_yet_implemented: |-
         Configuration is not yet implemented
@@ -33,6 +33,13 @@ en:
         There was an error when attemping to create the directory for SCP Sync.
         Target Files: %{target_files}
 
+        Error: %{stderr}
+        Full command causing error:
+        %{command}
+
+      scp_sync_folder_error: |-
+        There was an error when attemping to sync folders using scp.
+        Please inspect the error message below for more info.
         Error: %{stderr}
         Full command causing error:
         %{command}

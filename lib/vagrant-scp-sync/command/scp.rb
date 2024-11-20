@@ -15,23 +15,41 @@ module VagrantPlugins
 
         def execute
           @source, @target = parse_args
-
+        
           with_target_vms(host) do |machine|
             raise Vagrant::Errors::SSHNotReady if machine.ssh_info.nil?
-
+        
             if @source.nil? && @target.nil?
               folders = machine.config.vm.synced_folders
               ssh_info = machine.ssh_info
               scp_path = Vagrant::Util::Which.which('scp')
               machine.ui.warn(I18n.t('vagrant.scp_ssh_password')) if ssh_info[:private_key_path].empty? && ssh_info[:password]
-
               folders.each_value do |folder_opts|
                 next unless folder_opts[:type] == :scp
-
+        
                 VagrantPlugins::ScpSync::ScpSyncHelper.scp_single(machine, folder_opts, scp_path)
               end
             else
-              sync_files(machine, @source, @target)
+              ssh_info = machine.ssh_info
+              scp_path = Vagrant::Util::Which.which('scp')
+              direction = net_ssh_command(@source)
+              source = format_file_path(machine, @source)
+              target = format_file_path(machine, @target)
+              folder_opts = {
+                type: :scp,
+                map: source,
+                to: target,
+                owner: ssh_info[:username],
+                group: ssh_info[:username],
+                direction: direction,
+                scp__args: ["--delete"],
+                rsync__args: ["--delete"],
+                disabled: false,
+                guestpath: target,
+                hostpath: source
+              }
+
+              VagrantPlugins::ScpSync::ScpSyncHelper.scp_single(machine, folder_opts, scp_path)
             end
           end
         end
@@ -56,60 +74,6 @@ module VagrantPlugins
 
         require_relative '../action/scp_sync'
 
-        def sync_files(machine, source, target)
-          ssh_info = machine.ssh_info
-          source = expand_path(source, machine)
-          target = expand_path(target, machine)
-          source += '*' if source.end_with?('/')
-
-          if net_ssh_command(source) == :upload!
-            target = "#{ssh_info[:username]}@#{ssh_info[:host]}:'#{format_file_path(machine, target)}'"
-            source = "'#{format_file_path(machine, source)}'"
-          else
-            target = "'#{format_file_path(machine, target)}'"
-            source = "#{ssh_info[:username]}@#{ssh_info[:host]}:'#{format_file_path(machine, source)}'"
-          end
-
-          proxy_command = if machine.ssh_info[:proxy_command]
-                            "-o ProxyCommand='#{ssh_info[:proxy_command]}'"
-                          else
-                            ''
-                          end
-
-          command = [
-            'scp',
-            '-r',
-            '-o StrictHostKeyChecking=no',
-            '-o UserKnownHostsFile=/dev/null',
-            "-o port=#{ssh_info[:port]}",
-            '-o LogLevel=ERROR',
-            proxy_command,
-            machine.ssh_info[:private_key_path].map { |k| "-i '#{k}'" }.join(' '),
-            source,
-            target
-          ].join(' ')
-          log_and_execute(machine, command, 'scp_sync_folder', source, target)
-        end
-
-        def log_and_execute(machine, command, message_key, source_files, target_files)
-          machine.ui.info(
-            I18n.t(
-              "vagrant_scp_sync.action.#{message_key}",
-              command: command,
-              source_files: source_files,
-              target_files: target_files
-            )
-          )
-
-          result = Vagrant::Util::Subprocess.execute('sh', '-c', command)
-
-          unless result.exit_code.zero?
-            raise VagrantPlugins::ScpSync::Errors::ScpSyncError,
-                  command: command,
-                  stderr: result.stderr
-          end
-        end
-
         def host
           host = [@source, @target].map do |file_spec|
             file_spec.match(/^([^:]*):/)[1]
@@ -121,7 +85,7 @@ module VagrantPlugins
         end
 
         def net_ssh_command(source)
-          source.include?(':') ? :download! : :upload!
+          source.include?(':') ? :download : :upload
         end
 
         def expand_path(path, machine)
