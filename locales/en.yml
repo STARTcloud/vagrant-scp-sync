@@ -8,33 +8,7 @@ en:
         Source Files: %{source_files}
         Full command:
         %{command}
-      scp_change_ownership_folder: |-
-        Changing Folder Ownerhip
 
-        Target Files: %{target_files}
-        Source Files: %{source_files}
-        Full command:
-        %{command}
-      scp_change_permissions_folder: |-
-        Changing Folder Permissions
-
-        Target Files: %{target_files}
-        Source Files: %{source_files}
-        Full command:
-        %{command}
-      scp_remove_folder: |-
-        Removing Folder
-
-        Target Files: %{target_files}
-        Source Files: %{source_files}
-        Full command:
-        %{command}
-      scp_make_folder: |-
-        Making Folder
-
-        Target Files: %{target_files}
-        Full command:
-        %{command}
     errors:
       not_yet_implemented: |-
         Configuration is not yet implemented

@@ -21,9 +21,9 @@ module VagrantPlugins
       def usable?(_machine, *args)
         scp_path = Which.which('scp')
         return true if scp_path
-      
+
         return false unless args.include?(:raise_error) && args[:raise_error]
-      
+
         raise Vagrant::Errors::SCPNotFound
       end
 
@@ -34,7 +34,7 @@ module VagrantPlugins
         scp_path = Which.which('scp')
 
         machine.ui.warn(I18n.t('vagrant.scp_ssh_password')) if ssh_info[:private_key_path].empty? && ssh_info[:password]
-        
+
         folders.each_value do |folder_opts|
           ScpSyncHelper.scp_single(machine, folder_opts, scp_path)
         end

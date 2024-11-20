@@ -39,11 +39,10 @@ module VagrantPlugins
         end
 
         synchronize = build_scp_command(scp_path, ssh_opts, source, target)
-
-        execute_command(machine, remove_dir, delete, 'scp_remove_folder', opts)
-        execute_command(machine, make_dir, true, 'scp_make_folder', opts)
-        execute_command(machine, change_ownership, true, 'scp_change_ownership_folder', opts)
-        execute_command(machine, change_permissions, true, 'scp_change_permissions_folder', opts)
+        execute_command(machine, remove_dir, delete, nil, opts)
+        execute_command(machine, make_dir, false, nil, opts)
+        execute_command(machine, change_ownership, false, nil, opts)
+        execute_command(machine, change_permissions, false, nil, opts)
         execute_command(machine, synchronize, true, 'scp_sync_folder', opts)
       end
 
@@ -81,17 +80,21 @@ module VagrantPlugins
 
       def self.execute_command(machine, command, raise_error, message_key, opts)
         return if command.nil?
-
-        machine.ui.info(
-          I18n.t(
-            "vagrant_scp_sync.action.#{message_key}",
-            command: command,
-            target_files: opts[:to],
-            source_files: opts[:map]
+      
+        # Only display the message if message_key is not nil
+        if message_key
+          machine.ui.info(
+            I18n.t(
+              "vagrant_scp_sync.action.#{message_key}",
+              command: command,
+              target_files: opts[:to],
+              source_files: opts[:map]
+            )
           )
-        )
+        end
+      
         result = Vagrant::Util::Subprocess.execute('sh', '-c', command)
-
+      
         raise_scp_error(message_key, command, result.stderr) if raise_error && !result.exit_code.zero?
       end
 
