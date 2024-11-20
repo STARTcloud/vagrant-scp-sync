@@ -14,7 +14,6 @@ module VagrantPlugins
         source_files = expand_path(opts[:map], machine)
         has_trailing_slash_source = opts[:map].end_with?('/')
         sync_source_files = append_wildcard(source_files, has_trailing_slash_source)
-
         target_files = expand_path(opts[:to], machine)
 
         opts[:owner] ||= ssh_info[:username]
