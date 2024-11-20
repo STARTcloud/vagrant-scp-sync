@@ -17,12 +17,6 @@ module VagrantPlugins
         Copy files to vagrant boxes via scp
       DESC
 
-      command 'scp' do
-        setup_i18n
-        require_relative 'command/scp'
-        Command
-      end
-
       synced_folder('scp', 5) do
         require_relative 'synced_folder'
         SyncedFolder
@@ -69,6 +63,12 @@ module VagrantPlugins
       # from the parent logger.
       setup_logging
       setup_i18n
+
+      command('scp') do
+        require_relative 'command/scp'
+        Command::ScpSyncCommand
+      end
+
     end
   end
 end
