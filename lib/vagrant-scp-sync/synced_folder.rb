@@ -18,7 +18,7 @@ module VagrantPlugins
         @logger = Log4r::Logger.new('vagrant_scp_sync')
       end
 
-      def usable?(machine, *args)
+      def usable?(_machine, *args)
         scp_path = Which.which('scp')
         return true if scp_path
       
