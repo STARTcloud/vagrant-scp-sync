@@ -2,12 +2,7 @@ en:
   vagrant_scp_sync:
     action:
       scp_sync_folder: |-
-        Syncing Folder
-
-        Target Files: %{target_files}
-        Source Files: %{source_files}
-        Full command:
-        %{command}
+        Syncing Folder: %{source_files} ==> %{target_files}
 
     errors:
       not_yet_implemented: |-
