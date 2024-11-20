@@ -58,13 +58,9 @@ module VagrantPlugins
 
         def sync_files(machine, source, target)
           ssh_info = machine.ssh_info
-
-          # Expand the source and target paths
           source = expand_path(source, machine)
           target = expand_path(target, machine)
-
-          # Check if the source ends with a slash and append a wildcard if it does
-          source = source.end_with?('/') ? "#{source}*" : source
+          source += '*' if source.end_with?('/')
 
           if net_ssh_command(source) == :upload!
             target = "#{ssh_info[:username]}@#{ssh_info[:host]}:'#{format_file_path(machine, target)}'"
@@ -107,12 +103,11 @@ module VagrantPlugins
 
           result = Vagrant::Util::Subprocess.execute('sh', '-c', command)
 
-          raise VagrantPlugins::ScpSync::Errors::ScpSyncError,
-                command: command,
-                stderr: result.stderr unless result.exit_code.zero?
-
-          return if result.exit_code.zero?
-
+          unless result.exit_code.zero?
+            raise VagrantPlugins::ScpSync::Errors::ScpSyncError,
+                  command: command,
+                  stderr: result.stderr
+          end
         end
 
         def host
