@@ -80,8 +80,7 @@ module VagrantPlugins
 
       def self.execute_command(machine, command, raise_error, message_key, opts)
         return if command.nil?
-      
-        # Only display the message if message_key is not nil
+
         if message_key
           machine.ui.info(
             I18n.t(
@@ -92,9 +91,9 @@ module VagrantPlugins
             )
           )
         end
-      
+
         result = Vagrant::Util::Subprocess.execute('sh', '-c', command)
-      
+
         raise_scp_error(message_key, command, result.stderr) if raise_error && !result.exit_code.zero?
       end
 
