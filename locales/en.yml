@@ -1,9 +1,7 @@
 en:
   vagrant_scp_sync:
     action:
-      scp_sync_folder: |-
-        Syncing Folder: %{source_files} ==> %{target_files}
-
+      scp_sync_files: "Syncing files: %{source_files} ==> %{target_files}"
     errors:
       not_yet_implemented: |-
         Configuration is not yet implemented

@@ -20,10 +20,17 @@ module VagrantPlugins
             raise Vagrant::Errors::SSHNotReady if machine.ssh_info.nil?
 
             if @source.nil? && @target.nil?
-              # No arguments provided, iterate through all folders
-              sync_all_folders(machine)
+              folders = machine.config.vm.synced_folders
+              ssh_info = machine.ssh_info
+              scp_path = Vagrant::Util::Which.which('scp')
+              machine.ui.warn(I18n.t('vagrant.scp_ssh_password')) if ssh_info[:private_key_path].empty? && ssh_info[:password]
+
+              folders.each_value do |folder_opts|
+                next unless folder_opts[:type] == :scp
+
+                VagrantPlugins::ScpSync::ScpSyncHelper.scp_single(machine, folder_opts, scp_path)
+              end
             else
-              # Two arguments provided, sync as before
               sync_files(machine, @source, @target)
             end
           end
@@ -47,23 +54,24 @@ module VagrantPlugins
           [nil, nil]
         end
 
-        require_relative '../action/scp_sync' # Add this line to require the scp_sync file
-
-        def sync_all_folders(machine)
-          folders = machine.config.vm.synced_folders
-          folders.each_value do |folder_opts|
-            scp_path = Vagrant::Util::Which.which('scp')
-            VagrantPlugins::ScpSync::ScpSyncHelper.scp_single(machine, folder_opts, scp_path)
-          end
-        end
+        require_relative '../action/scp_sync'
 
         def sync_files(machine, source, target)
+          ssh_info = machine.ssh_info
+
+          # Expand the source and target paths
+          source = expand_path(source, machine)
+          target = expand_path(target, machine)
+
+          # Check if the source ends with a slash and append a wildcard if it does
+          source = source.end_with?('/') ? "#{source}*" : source
+
           if net_ssh_command(source) == :upload!
-            target = "#{machine.ssh_info[:username]}@#{machine.ssh_info[:host]}:'#{format_file_path(target)}'"
-            source = "'#{format_file_path(source)}'"
+            target = "#{machine.ssh_info[:username]}@#{machine.ssh_info[:host]}:'#{format_file_path(machine, target)}'"
+            source = "'#{format_file_path(machine, source)}'"
           else
-            target = "'#{format_file_path(target)}'"
-            source = "#{machine.ssh_info[:username]}@#{machine.ssh_info[:host]}:'#{format_file_path(source)}'"
+            target = "'#{format_file_path(machine, target)}'"
+            source = "#{machine.ssh_info[:username]}@#{machine.ssh_info[:host]}:'#{format_file_path(machine, source)}'"
           end
 
           proxy_command = if machine.ssh_info[:proxy_command]
@@ -84,7 +92,7 @@ module VagrantPlugins
             source,
             target
           ].join(' ')
-          log_and_execute(machine, command, 'scp_sync_files', source, target)
+          log_and_execute(machine, command, 'scp_sync_folder', source, target)
         end
 
         def log_and_execute(machine, command, message_key, source_files, target_files)
@@ -96,8 +104,14 @@ module VagrantPlugins
               target_files: target_files
             )
           )
-          result = `#{command}`
-          machine.ui.info(result)
+
+          result = Vagrant::Util::Subprocess.execute('sh', '-c', command)
+
+          if result.exit_code != 0
+            raise VagrantPlugins::ScpSync::Errors::ScpSyncError,
+                  command: command,
+                  stderr: result.stderr
+          end
         end
 
         def host
@@ -114,7 +128,13 @@ module VagrantPlugins
           source.include?(':') ? :download! : :upload!
         end
 
-        def format_file_path(filepath)
+        def expand_path(path, machine)
+          expanded_path = File.expand_path(path, machine.env.root_path)
+          Vagrant::Util::Platform.fs_real_path(expanded_path).to_s
+        end
+
+        def format_file_path(machine, filepath)
+          ssh_info = machine.ssh_info
           if filepath.include?(':')
             filepath.split(':').last.gsub('~', "/home/#{ssh_info[:username]}")
           else
