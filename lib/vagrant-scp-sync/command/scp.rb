@@ -48,7 +48,7 @@ module VagrantPlugins
             o.separator ''
           end
           argv = parse_options(opts)
-          return argv if argv && (argv.length == 0 || argv.length == 2)
+          return argv if argv && (argv.empty? || argv.length == 2)
 
           @env.ui.info(opts.help, prefix: false)
           [nil, nil]
@@ -67,15 +67,15 @@ module VagrantPlugins
           source = source.end_with?('/') ? "#{source}*" : source
 
           if net_ssh_command(source) == :upload!
-            target = "#{machine.ssh_info[:username]}@#{machine.ssh_info[:host]}:'#{format_file_path(machine, target)}'"
+            target = "#{ssh_info[:username]}@#{ssh_info[:host]}:'#{format_file_path(machine, target)}'"
             source = "'#{format_file_path(machine, source)}'"
           else
             target = "'#{format_file_path(machine, target)}'"
-            source = "#{machine.ssh_info[:username]}@#{machine.ssh_info[:host]}:'#{format_file_path(machine, source)}'"
+            source = "#{ssh_info[:username]}@#{ssh_info[:host]}:'#{format_file_path(machine, source)}'"
           end
 
           proxy_command = if machine.ssh_info[:proxy_command]
-                            "-o ProxyCommand='#{machine.ssh_info[:proxy_command]}'"
+                            "-o ProxyCommand='#{ssh_info[:proxy_command]}'"
                           else
                             ''
                           end
@@ -85,7 +85,7 @@ module VagrantPlugins
             '-r',
             '-o StrictHostKeyChecking=no',
             '-o UserKnownHostsFile=/dev/null',
-            "-o port=#{machine.ssh_info[:port]}",
+            "-o port=#{ssh_info[:port]}",
             '-o LogLevel=ERROR',
             proxy_command,
             machine.ssh_info[:private_key_path].map { |k| "-i '#{k}'" }.join(' '),
@@ -107,11 +107,12 @@ module VagrantPlugins
 
           result = Vagrant::Util::Subprocess.execute('sh', '-c', command)
 
-          if result.exit_code != 0
-            raise VagrantPlugins::ScpSync::Errors::ScpSyncError,
-                  command: command,
-                  stderr: result.stderr
-          end
+          raise VagrantPlugins::ScpSync::Errors::ScpSyncError,
+                command: command,
+                stderr: result.stderr unless result.exit_code.zero?
+
+          return if result.exit_code.zero?
+
         end
 
         def host

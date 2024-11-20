@@ -68,7 +68,6 @@ module VagrantPlugins
         require_relative 'command/scp'
         Command::ScpSyncCommand
       end
-
     end
   end
 end
