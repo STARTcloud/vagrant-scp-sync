@@ -1,5 +1,22 @@
 # Changelog
 
+## [0.5.11](https://github.com/STARTcloud/vagrant-scp-sync/compare/v0.5.10...v0.5.11) (2024-11-20)
+
+
+### Bug Fixes
+
+* implentation complete ([987197d](https://github.com/STARTcloud/vagrant-scp-sync/commit/987197d15506d7c11b08af2e279efeb178037b71))
+* linting ([c531e5b](https://github.com/STARTcloud/vagrant-scp-sync/commit/c531e5b2137781d6c670dc1cc0053d79a63637b6))
+* linting ([9720ea7](https://github.com/STARTcloud/vagrant-scp-sync/commit/9720ea74d683180f213b62dc45c821b3b3e9c615))
+* linting ([dbc75c3](https://github.com/STARTcloud/vagrant-scp-sync/commit/dbc75c328c7e5e042d02e8c7472a83e3898b274b))
+* linting ([fbb7533](https://github.com/STARTcloud/vagrant-scp-sync/commit/fbb7533ee869bd1d761fd33b365b26bcca9557c7))
+* linting ([70266d1](https://github.com/STARTcloud/vagrant-scp-sync/commit/70266d1a4aafe9e68ed9e1f5f0242268f1f3e5cc))
+* linting ([3e7facd](https://github.com/STARTcloud/vagrant-scp-sync/commit/3e7facd04a4af7060773e96b6e298a2c0ae0f953))
+* linting ([da0ef5d](https://github.com/STARTcloud/vagrant-scp-sync/commit/da0ef5d2435ca6cef31fc626891d1144677a34bb))
+* synced folders reference ([2b8ade9](https://github.com/STARTcloud/vagrant-scp-sync/commit/2b8ade9ef7d896e11851eb004ac687031f8dd1a0))
+* synced folders refernce ([3efe97c](https://github.com/STARTcloud/vagrant-scp-sync/commit/3efe97c50ea6e18e5aca4876c2fd05003401ddb0))
+* synced folders refernce ([fa1dfc5](https://github.com/STARTcloud/vagrant-scp-sync/commit/fa1dfc5a04611ac623b84cd02c7c513fb390936e))
+
 ## [0.5.10](https://github.com/STARTcloud/vagrant-scp-sync/compare/v0.5.9...v0.5.10) (2024-11-19)
 
 
