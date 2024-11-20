@@ -15,10 +15,10 @@ module VagrantPlugins
 
         def execute
           @source, @target = parse_args
-        
+
           with_target_vms(host) do |machine|
             raise Vagrant::Errors::SSHNotReady if machine.ssh_info.nil?
-        
+
             if @source.nil? && @target.nil?
               folders = machine.config.vm.synced_folders
               ssh_info = machine.ssh_info
@@ -26,7 +26,7 @@ module VagrantPlugins
               machine.ui.warn(I18n.t('vagrant.scp_ssh_password')) if ssh_info[:private_key_path].empty? && ssh_info[:password]
               folders.each_value do |folder_opts|
                 next unless folder_opts[:type] == :scp
-        
+
                 VagrantPlugins::ScpSync::ScpSyncHelper.scp_single(machine, folder_opts, scp_path)
               end
             else
@@ -42,8 +42,8 @@ module VagrantPlugins
                 owner: ssh_info[:username],
                 group: ssh_info[:username],
                 direction: direction,
-                scp__args: ["--delete"],
-                rsync__args: ["--delete"],
+                scp__args: ['--delete'],
+                rsync__args: ['--delete'],
                 disabled: false,
                 guestpath: target,
                 hostpath: source
