@@ -17,7 +17,6 @@ module VagrantPlugins
 
         target_files = expand_path(opts[:to], machine)
         has_trailing_slash_target = opts[:to].end_with?('/')
-        sync_target_files = append_wildcard(target_files, has_trailing_slash_target)
 
         opts[:owner] ||= ssh_info[:username]
         opts[:group] ||= ssh_info[:username]
@@ -48,8 +47,6 @@ module VagrantPlugins
         execute_command(machine, change_permissions, true, 'scp_change_permissions_folder', opts)
         execute_command(machine, synchronize, true, 'scp_sync_folder', opts)
       end
-
-      private
 
       def self.expand_path(path, machine)
         expanded_path = File.expand_path(path, machine.env.root_path)
@@ -85,7 +82,7 @@ module VagrantPlugins
 
       def self.execute_command(machine, command, raise_error, message_key, opts)
         return if command.nil?
-      
+
         machine.ui.info(
           I18n.t(
             "vagrant_scp_sync.action.#{message_key}",
@@ -95,7 +92,7 @@ module VagrantPlugins
           )
         )
         result = Vagrant::Util::Subprocess.execute('sh', '-c', command)
-      
+
         raise_scp_error(message_key, command, result.stderr) if raise_error && !result.exit_code.zero?
       end
 
@@ -104,6 +101,9 @@ module VagrantPlugins
               command: command,
               stderr: stderr
       end
+
+      private_class_method :expand_path, :append_wildcard, :build_ssh_options, :build_scp_options,
+                           :build_ssh_command, :build_scp_command, :execute_command, :raise_scp_error
     end
   end
 end
