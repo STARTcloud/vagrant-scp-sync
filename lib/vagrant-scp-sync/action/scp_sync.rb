@@ -34,7 +34,7 @@ module VagrantPlugins
         elsif opts[:direction] == :download
           source = "#{ssh_info[:username]}@#{ssh_info[:host]}:#{sync_source_files}"
           target = target_files
-          
+
           # For directory sync or explicit directory target (ends with slash), create the full path
           if has_trailing_slash_source || target.end_with?('/')
             make_dir = "mkdir -p #{target}"
