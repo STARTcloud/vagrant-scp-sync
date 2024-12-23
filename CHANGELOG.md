@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.5.18](https://github.com/STARTcloud/vagrant-scp-sync/compare/v0.5.17...v0.5.18) (2024-12-23)
+
+
+### Bug Fixes
+
+* added vagrant sync as an alias ([b4519cd](https://github.com/STARTcloud/vagrant-scp-sync/commit/b4519cd9a0cd1e4b00481266ab91196392fcb277))
+* added vagrant sync as an alias ([fef3ce9](https://github.com/STARTcloud/vagrant-scp-sync/commit/fef3ce994a291d0b1c795af3101049b325740510))
+
 ## [0.5.17](https://github.com/STARTcloud/vagrant-scp-sync/compare/v0.5.16...v0.5.17) (2024-12-23)
 
 
