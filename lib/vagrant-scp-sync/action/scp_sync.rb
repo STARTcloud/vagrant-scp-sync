@@ -22,26 +22,62 @@ module VagrantPlugins
 
         delete = scp_opts.include?('--delete')
 
+        # Handle source and target path behaviors
+        has_trailing_slash_source = opts[:map].end_with?('/')
+        has_trailing_slash_target = opts[:to].end_with?('/')
+        is_source_directory = File.directory?(source_files)
+
         if opts[:direction] == :upload || opts[:direction].nil?
-          source = source_files
-          target = "#{ssh_info[:username]}@#{ssh_info[:host]}:#{target_files}"
-          target_dir = File.dirname(target_files)
-          make_dir = build_ssh_command(ssh_opts, "sudo mkdir -p #{target_dir}", ssh_info)
-          change_ownership = build_ssh_command(ssh_opts, "sudo chown -R #{opts[:owner]}:#{opts[:group]} #{target_dir}", ssh_info)
-          change_permissions = build_ssh_command(ssh_opts, "sudo chmod 777 #{target_dir}", ssh_info)
-          remove_dir = build_ssh_command(ssh_opts, "sudo rm -rf #{target_files}", ssh_info)
+          # For upload direction
+          target_check = build_ssh_command(ssh_opts, "test -e #{target_files} && echo 'EXISTS' || echo 'NOT_EXISTS'", ssh_info)
+          target_type_check = build_ssh_command(ssh_opts, "test -d #{target_files} && echo 'DIR' || echo 'FILE'", ssh_info)
+          
+          # Check if target exists and its type
+          target_exists = execute_command_with_output(machine, target_check).strip == 'EXISTS'
+          target_is_dir = target_exists && execute_command_with_output(machine, target_type_check).strip == 'DIR'
+
+          # Determine source path based on trailing slash and directory status
+          source = if is_source_directory && has_trailing_slash_source
+                    "#{source_files}/*"  # Copy contents of directory
+                  else
+                    source_files         # Copy directory itself or single file
+                  end
+
+          # Determine target path based on existence and trailing slash
+          target_base = "#{ssh_info[:username]}@#{ssh_info[:host]}:#{target_files}"
+          target = if target_exists && target_is_dir && !has_trailing_slash_target
+                    # If target exists as directory but no trailing slash, put source inside it
+                    "#{target_base}/#{File.basename(source_files)}"
+                  else
+                    target_base
+                  end
+
+          # Prepare target directory
+          parent_dir = File.dirname(target_files)
+          make_dir = build_ssh_command(ssh_opts, "sudo mkdir -p #{parent_dir}", ssh_info)
+          change_ownership = build_ssh_command(ssh_opts, "sudo chown -R #{opts[:owner]}:#{opts[:group]} #{parent_dir}", ssh_info)
+          change_permissions = build_ssh_command(ssh_opts, "sudo chmod 777 #{parent_dir}", ssh_info)
+          remove_dir = build_ssh_command(ssh_opts, "sudo rm -rf #{target_files}", ssh_info) if delete
+
         elsif opts[:direction] == :download
+          # For download direction
           source = "#{ssh_info[:username]}@#{ssh_info[:host]}:#{source_files}"
+          source = "#{source}/*" if has_trailing_slash_source
+          
+          # Create target directory if needed
           target = target_files
-          target_dir = File.dirname(target_files)
-          make_dir = target_dir == '.' ? nil : "mkdir -p #{target_dir}"
+          parent_dir = File.dirname(target)
+          make_dir = "mkdir -p #{parent_dir}"
         end
 
-        synchronize = build_scp_command(scp_path, ssh_opts, source, target)
-        execute_command(machine, remove_dir, delete, nil, opts)
+        # Execute commands
+        execute_command(machine, remove_dir, delete, nil, opts) if delete
         execute_command(machine, make_dir, false, nil, opts)
-        execute_command(machine, change_ownership, false, nil, opts)
-        execute_command(machine, change_permissions, false, nil, opts)
+        execute_command(machine, change_ownership, false, nil, opts) if opts[:direction] == :upload
+        execute_command(machine, change_permissions, false, nil, opts) if opts[:direction] == :upload
+
+        # Build and execute the scp command
+        synchronize = build_scp_command(scp_path, ssh_opts, source, target)
         execute_command(machine, synchronize, true, 'scp_sync_folder', opts)
       end
 
@@ -92,13 +128,22 @@ module VagrantPlugins
         raise_scp_error(message_key, command, result.stderr) if raise_error && !result.exit_code.zero?
       end
 
+      def self.execute_command_with_output(machine, command)
+        return '' if command.nil?
+
+        result = Vagrant::Util::Subprocess.execute('sh', '-c', command)
+        result.stdout
+      end
+
       def self.raise_scp_error(message_key, command, stderr)
         raise Errors.const_get("SyncedFolderScpSync#{message_key.split('_').map(&:capitalize).join}Error"),
               command: command,
               stderr: stderr
       end
 
-      private_class_method :expand_path, :build_ssh_options, :build_scp_options, :build_ssh_command, :build_scp_command, :execute_command, :raise_scp_error
+      private_class_method :expand_path, :build_ssh_options, :build_scp_options,
+                          :build_ssh_command, :build_scp_command, :execute_command,
+                          :execute_command_with_output, :raise_scp_error
     end
   end
 end
