@@ -2,10 +2,22 @@
 
 require 'vagrant/util/platform'
 require 'vagrant/util/subprocess'
-require 'vagrant-scp-sync/ssh_options'
-
 module VagrantPlugins
   module ScpSync
+    # Helper class for building SSH options
+    class SshOptions
+      def self.build(ssh_info)
+        opts = %w[
+          -o StrictHostKeyChecking=no
+          -o UserKnownHostsFile=/dev/null
+          -o LogLevel=ERROR
+        ]
+        opts << "-o port=#{ssh_info[:port]}"
+        opts << ssh_info[:private_key_path].map { |k| "-i #{k}" }.join(' ')
+        opts
+      end
+    end
+
     # This will SCP the files
     class ScpSyncHelper
       def self.scp_single(machine, opts, scp_path)
@@ -74,19 +86,19 @@ module VagrantPlugins
           make_dir = "mkdir -p #{target_dir}"
         end
 
-        # Execute commands with proper error messages
-        execute_command(machine, remove_dir, true, 'scp_sync_error_delete_directory', opts) if delete
-        execute_command(machine, make_dir, true, 'scp_sync_error_make_directory', opts)
-
+        # Execute commands silently for setup
+        execute_command(machine, remove_dir, true, nil, opts) if delete
+        execute_command(machine, make_dir, true, nil, opts)
+        
         # For upload, ensure remote directory permissions
         if opts[:direction] == :upload || opts[:direction].nil?
-          execute_command(machine, change_ownership, true, 'scp_sync_error_change_ownership_directory', opts)
-          execute_command(machine, change_permissions, true, 'scp_sync_error_change_permissions_directory', opts)
+          execute_command(machine, change_ownership, true, nil, opts)
+          execute_command(machine, change_permissions, true, nil, opts)
         end
 
-        # Build and execute the scp command
+        # Build and execute the scp command with sync message
         synchronize = build_scp_command(scp_path, ssh_opts, source, target)
-        execute_command(machine, synchronize, true, 'scp_sync_folder_error', opts)
+        execute_command(machine, synchronize, true, 'scp_sync_folder', opts)
       end
 
       def self.expand_path(path, machine)
