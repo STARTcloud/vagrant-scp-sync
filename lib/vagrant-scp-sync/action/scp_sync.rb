@@ -31,26 +31,26 @@ module VagrantPlugins
           # For upload direction
           target_check = build_ssh_command(ssh_opts, "test -e #{target_files} && echo 'EXISTS' || echo 'NOT_EXISTS'", ssh_info)
           target_type_check = build_ssh_command(ssh_opts, "test -d #{target_files} && echo 'DIR' || echo 'FILE'", ssh_info)
-          
+
           # Check if target exists and its type
           target_exists = execute_command_with_output(machine, target_check).strip == 'EXISTS'
           target_is_dir = target_exists && execute_command_with_output(machine, target_type_check).strip == 'DIR'
 
           # Determine source path based on trailing slash and directory status
           source = if is_source_directory && has_trailing_slash_source
-                    "#{source_files}/*"  # Copy contents of directory
-                  else
-                    source_files         # Copy directory itself or single file
-                  end
+                     "#{source_files}/*"  # Copy contents of directory
+                   else
+                     source_files         # Copy directory itself or single file
+                   end
 
           # Determine target path based on existence and trailing slash
           target_base = "#{ssh_info[:username]}@#{ssh_info[:host]}:#{target_files}"
           target = if target_exists && target_is_dir && !has_trailing_slash_target
-                    # If target exists as directory but no trailing slash, put source inside it
-                    "#{target_base}/#{File.basename(source_files)}"
-                  else
-                    target_base
-                  end
+                     # If target exists as directory but no trailing slash, put source inside it
+                     "#{target_base}/#{File.basename(source_files)}"
+                   else
+                     target_base
+                   end
 
           # Prepare target directory
           parent_dir = File.dirname(target_files)
@@ -63,7 +63,7 @@ module VagrantPlugins
           # For download direction
           source = "#{ssh_info[:username]}@#{ssh_info[:host]}:#{source_files}"
           source = "#{source}/*" if has_trailing_slash_source
-          
+
           # Create target directory if needed
           target = target_files
           parent_dir = File.dirname(target)
@@ -128,7 +128,7 @@ module VagrantPlugins
         raise_scp_error(message_key, command, result.stderr) if raise_error && !result.exit_code.zero?
       end
 
-      def self.execute_command_with_output(machine, command)
+      def self.execute_command_with_output(_machine, command)
         return '' if command.nil?
 
         result = Vagrant::Util::Subprocess.execute('sh', '-c', command)
@@ -142,8 +142,8 @@ module VagrantPlugins
       end
 
       private_class_method :expand_path, :build_ssh_options, :build_scp_options,
-                          :build_ssh_command, :build_scp_command, :execute_command,
-                          :execute_command_with_output, :raise_scp_error
+                           :build_ssh_command, :build_scp_command, :execute_command,
+                           :execute_command_with_output, :raise_scp_error
     end
   end
 end
