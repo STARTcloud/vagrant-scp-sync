@@ -1,6 +1,9 @@
 # .github/workflows/release.yml
 
 name: Test, Lint, Release and Publish
+run-name: >-
+  ${{ github.event_name == 'push' 
+  && format('Auto - Test, Lint, Release and Publish', github.ref_name) }}
 
 on:
   push:

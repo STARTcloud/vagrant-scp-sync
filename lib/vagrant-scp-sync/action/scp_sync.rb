@@ -89,7 +89,7 @@ module VagrantPlugins
         # Execute commands silently for setup
         execute_command(machine, remove_dir, true, nil, opts) if delete
         execute_command(machine, make_dir, true, nil, opts)
-        
+
         # For upload, ensure remote directory permissions
         if opts[:direction] == :upload || opts[:direction].nil?
           execute_command(machine, change_ownership, true, nil, opts)
