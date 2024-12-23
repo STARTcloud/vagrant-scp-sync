@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.5.15](https://github.com/STARTcloud/vagrant-scp-sync/compare/v0.5.14...v0.5.15) (2024-12-23)
+
+
+### Bug Fixes
+
+* single file sync - lint ([3f77284](https://github.com/STARTcloud/vagrant-scp-sync/commit/3f772846fee7d2a42b7ffa6cfcc4bf4547e09466))
+* single file sync - lint ([029372f](https://github.com/STARTcloud/vagrant-scp-sync/commit/029372fbb906281ee70d0bcae800f71b73f88f73))
+
 ## [0.5.14](https://github.com/STARTcloud/vagrant-scp-sync/compare/v0.5.13...v0.5.14) (2024-12-23)
 
 
