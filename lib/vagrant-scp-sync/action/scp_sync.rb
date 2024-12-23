@@ -12,8 +12,6 @@ module VagrantPlugins
         raise Vagrant::Errors::SSHNotReady if ssh_info.nil?
 
         source_files = expand_path(opts[:map], machine)
-        has_trailing_slash_source = opts[:map].end_with?('/')
-        sync_source_files = append_wildcard(source_files, has_trailing_slash_source)
         target_files = expand_path(opts[:to], machine)
 
         opts[:owner] ||= ssh_info[:username]
@@ -25,24 +23,20 @@ module VagrantPlugins
         delete = scp_opts.include?('--delete')
 
         if opts[:direction] == :upload || opts[:direction].nil?
-          source = sync_source_files
+          source = source_files
           target = "#{ssh_info[:username]}@#{ssh_info[:host]}:#{target_files}"
-          make_dir = build_ssh_command(ssh_opts, "sudo mkdir -p #{target_files}", ssh_info)
-          change_ownership = build_ssh_command(ssh_opts, "sudo chown -R #{opts[:owner]}:#{opts[:group]} #{target_files}", ssh_info)
-          change_permissions = build_ssh_command(ssh_opts, "sudo chmod 777 #{target_files}", ssh_info)
+          
+          target_dir = File.dirname(target_files)
+          make_dir = build_ssh_command(ssh_opts, "sudo mkdir -p #{target_dir}", ssh_info)
+          change_ownership = build_ssh_command(ssh_opts, "sudo chown -R #{opts[:owner]}:#{opts[:group]} #{target_dir}", ssh_info)
+          change_permissions = build_ssh_command(ssh_opts, "sudo chmod 777 #{target_dir}", ssh_info)
           remove_dir = build_ssh_command(ssh_opts, "sudo rm -rf #{target_files}", ssh_info)
         elsif opts[:direction] == :download
-          source = "#{ssh_info[:username]}@#{ssh_info[:host]}:#{sync_source_files}"
+          source = "#{ssh_info[:username]}@#{ssh_info[:host]}:#{source_files}"
           target = target_files
 
-          # For directory sync or explicit directory target (ends with slash), create the full path
-          if has_trailing_slash_source || target.end_with?('/')
-            make_dir = "mkdir -p #{target}"
-          else
-            # For file targets, only create the parent directory if it's not '.'
-            parent_dir = File.dirname(target)
-            make_dir = parent_dir == '.' ? nil : "mkdir -p #{parent_dir}"
-          end
+          target_dir = File.dirname(target_files)
+          make_dir = target_dir == '.' ? nil : "mkdir -p #{target_dir}"
         end
 
         synchronize = build_scp_command(scp_path, ssh_opts, source, target)
@@ -56,10 +50,6 @@ module VagrantPlugins
       def self.expand_path(path, machine)
         expanded_path = File.expand_path(path, machine.env.root_path)
         Vagrant::Util::Platform.fs_real_path(expanded_path).to_s
-      end
-
-      def self.append_wildcard(path, has_trailing_slash)
-        has_trailing_slash ? "#{path}/*" : path
       end
 
       def self.build_ssh_options(ssh_info)
@@ -110,8 +100,8 @@ module VagrantPlugins
               stderr: stderr
       end
 
-      private_class_method :expand_path, :append_wildcard, :build_ssh_options, :build_scp_options,
-                           :build_ssh_command, :build_scp_command, :execute_command, :raise_scp_error
+      private_class_method :expand_path, :build_ssh_options, :build_scp_options,
+                         :build_ssh_command, :build_scp_command, :execute_command, :raise_scp_error
     end
   end
 end
