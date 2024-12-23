@@ -52,11 +52,13 @@ module VagrantPlugins
                      target_base
                    end
 
-          # Prepare target directory
-          parent_dir = File.dirname(target_files)
-          make_dir = build_ssh_command(ssh_opts, "sudo mkdir -p #{parent_dir}", ssh_info)
-          change_ownership = build_ssh_command(ssh_opts, "sudo chown -R #{opts[:owner]}:#{opts[:group]} #{parent_dir}", ssh_info)
-          change_permissions = build_ssh_command(ssh_opts, "sudo chmod 777 #{parent_dir}", ssh_info)
+          # Prepare remote target directory with proper permissions
+          target_dir = target_files
+          target_dir = File.dirname(target_files) unless target_is_dir || has_trailing_slash_target
+
+          make_dir = build_ssh_command(ssh_opts, "sudo mkdir -p #{target_dir}", ssh_info)
+          change_ownership = build_ssh_command(ssh_opts, "sudo chown -R #{opts[:owner]}:#{opts[:group]} #{target_dir}", ssh_info)
+          change_permissions = build_ssh_command(ssh_opts, "sudo chmod -R 777 #{target_dir}", ssh_info)
           remove_dir = build_ssh_command(ssh_opts, "sudo rm -rf #{target_files}", ssh_info) if delete
 
         elsif opts[:direction] == :download
@@ -64,21 +66,29 @@ module VagrantPlugins
           source = "#{ssh_info[:username]}@#{ssh_info[:host]}:#{source_files}"
           source = "#{source}/*" if has_trailing_slash_source
 
-          # Create target directory if needed
+          # Create local target directory without sudo
           target = target_files
-          parent_dir = File.dirname(target)
-          make_dir = "mkdir -p #{parent_dir}"
+          target_dir = target_files
+          target_dir = File.dirname(target_files) unless File.directory?(target_files) || has_trailing_slash_target
+          make_dir = "mkdir -p #{target_dir}"
         end
 
-        # Execute commands
-        execute_command(machine, remove_dir, delete, nil, opts) if delete
-        execute_command(machine, make_dir, false, nil, opts)
-        execute_command(machine, change_ownership, false, nil, opts) if opts[:direction] == :upload
-        execute_command(machine, change_permissions, false, nil, opts) if opts[:direction] == :upload
+        # Execute commands with proper error messages
+        execute_command(machine, remove_dir, true, 'scp_sync_error_delete_directory', opts) if delete
+
+        # For upload, ensure remote directory creation and permissions succeed
+        if opts[:direction] == :upload || opts[:direction].nil?
+          execute_command(machine, make_dir, true, 'scp_sync_error_make_directory', opts)
+          execute_command(machine, change_ownership, true, 'scp_sync_error_change_ownership_directory', opts)
+          execute_command(machine, change_permissions, true, 'scp_sync_error_change_permissions_directory', opts)
+        else
+          # For download, only ensure local directory creation succeeds
+          execute_command(machine, make_dir, true, 'scp_sync_error_make_directory', opts)
+        end
 
         # Build and execute the scp command
         synchronize = build_scp_command(scp_path, ssh_opts, source, target)
-        execute_command(machine, synchronize, true, 'scp_sync_folder', opts)
+        execute_command(machine, synchronize, true, 'scp_sync_folder_error', opts)
       end
 
       def self.expand_path(path, machine)
