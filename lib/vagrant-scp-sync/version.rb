@@ -2,7 +2,7 @@
 
 module Vagrant
   module ScpSync
-    VERSION = '0.5.16'
+    VERSION = '0.5.17'
     NAME = 'vagrant-scp-sync'
   end
 end
