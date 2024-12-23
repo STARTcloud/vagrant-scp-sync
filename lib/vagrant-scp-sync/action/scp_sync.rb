@@ -25,7 +25,6 @@ module VagrantPlugins
         if opts[:direction] == :upload || opts[:direction].nil?
           source = source_files
           target = "#{ssh_info[:username]}@#{ssh_info[:host]}:#{target_files}"
-          
           target_dir = File.dirname(target_files)
           make_dir = build_ssh_command(ssh_opts, "sudo mkdir -p #{target_dir}", ssh_info)
           change_ownership = build_ssh_command(ssh_opts, "sudo chown -R #{opts[:owner]}:#{opts[:group]} #{target_dir}", ssh_info)
@@ -34,7 +33,6 @@ module VagrantPlugins
         elsif opts[:direction] == :download
           source = "#{ssh_info[:username]}@#{ssh_info[:host]}:#{source_files}"
           target = target_files
-
           target_dir = File.dirname(target_files)
           make_dir = target_dir == '.' ? nil : "mkdir -p #{target_dir}"
         end
@@ -100,8 +98,7 @@ module VagrantPlugins
               stderr: stderr
       end
 
-      private_class_method :expand_path, :build_ssh_options, :build_scp_options,
-                         :build_ssh_command, :build_scp_command, :execute_command, :raise_scp_error
+      private_class_method :expand_path, :build_ssh_options, :build_scp_options, :build_ssh_command, :build_scp_command, :execute_command, :raise_scp_error
     end
   end
 end
