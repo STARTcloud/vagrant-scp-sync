@@ -58,8 +58,8 @@ module VagrantPlugins
 
         def parse_args
           opts = OptionParser.new do |o|
-            o.banner =  "Usage: vagrant scp <local_path> [vm_name]:<remote_path> \n"
-            o.banner += "       vagrant scp [vm_name]:<remote_path> <local_path> \n"
+            o.banner =  "Usage: vagrant scp|sync <local_path> [vm_name]:<remote_path> \n"
+            o.banner += "       vagrant scp|sync [vm_name]:<remote_path> <local_path> \n"
             o.banner += 'Directories will be copied recursively.'
             o.separator ''
             o.separator 'Options:'

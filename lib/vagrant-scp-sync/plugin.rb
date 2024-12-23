@@ -64,9 +64,12 @@ module VagrantPlugins
       setup_logging
       setup_i18n
 
-      command('scp') do
-        require_relative 'command/scp'
-        Command::ScpSyncCommand
+      # Register both 'scp' and 'sync' commands to point to the same command class
+      ['scp', 'sync'].each do |cmd|
+        command(cmd) do
+          require_relative 'command/scp'
+          Command::ScpSyncCommand
+        end
       end
     end
   end
