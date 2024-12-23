@@ -34,7 +34,15 @@ module VagrantPlugins
         elsif opts[:direction] == :download
           source = "#{ssh_info[:username]}@#{ssh_info[:host]}:#{sync_source_files}"
           target = target_files
-          make_dir = "mkdir -p #{target_files}"
+          
+          # For directory sync or explicit directory target (ends with slash), create the full path
+          if has_trailing_slash_source || target.end_with?('/')
+            make_dir = "mkdir -p #{target}"
+          else
+            # For file targets, only create the parent directory if it's not '.'
+            parent_dir = File.dirname(target)
+            make_dir = parent_dir == '.' ? nil : "mkdir -p #{parent_dir}"
+          end
         end
 
         synchronize = build_scp_command(scp_path, ssh_opts, source, target)
