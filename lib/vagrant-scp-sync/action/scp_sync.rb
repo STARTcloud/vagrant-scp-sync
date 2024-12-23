@@ -66,7 +66,7 @@ module VagrantPlugins
           # For download direction
           source = "#{ssh_info[:username]}@#{ssh_info[:host]}:#{source_files}"
           source = "#{source}/*" if has_trailing_slash_source
-          
+
           # Create local target directory without sudo
           target = target_files
           target_dir = target_files
@@ -77,7 +77,7 @@ module VagrantPlugins
         # Execute commands with proper error messages
         execute_command(machine, remove_dir, true, 'scp_sync_error_delete_directory', opts) if delete
         execute_command(machine, make_dir, true, 'scp_sync_error_make_directory', opts)
-        
+
         # For upload, ensure remote directory permissions
         if opts[:direction] == :upload || opts[:direction].nil?
           execute_command(machine, change_ownership, true, 'scp_sync_error_change_ownership_directory', opts)
@@ -139,8 +139,8 @@ module VagrantPlugins
       end
 
       private_class_method :expand_path, :build_scp_options,
-                          :build_ssh_command, :build_scp_command, :execute_command,
-                          :execute_command_with_output, :raise_scp_error
+                           :build_ssh_command, :build_scp_command, :execute_command,
+                           :execute_command_with_output, :raise_scp_error
     end
   end
 end
