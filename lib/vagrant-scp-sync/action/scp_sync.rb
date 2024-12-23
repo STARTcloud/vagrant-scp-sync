@@ -2,6 +2,7 @@
 
 require 'vagrant/util/platform'
 require 'vagrant/util/subprocess'
+require 'vagrant-scp-sync/ssh_options'
 
 module VagrantPlugins
   module ScpSync
@@ -17,7 +18,7 @@ module VagrantPlugins
         opts[:owner] ||= ssh_info[:username]
         opts[:group] ||= ssh_info[:username]
 
-        ssh_opts = build_ssh_options(ssh_info)
+        ssh_opts = SshOptions.build(ssh_info)
         scp_opts = build_scp_options(opts)
 
         delete = scp_opts.include?('--delete')
@@ -65,7 +66,7 @@ module VagrantPlugins
           # For download direction
           source = "#{ssh_info[:username]}@#{ssh_info[:host]}:#{source_files}"
           source = "#{source}/*" if has_trailing_slash_source
-
+          
           # Create local target directory without sudo
           target = target_files
           target_dir = target_files
@@ -75,15 +76,12 @@ module VagrantPlugins
 
         # Execute commands with proper error messages
         execute_command(machine, remove_dir, true, 'scp_sync_error_delete_directory', opts) if delete
-
-        # For upload, ensure remote directory creation and permissions succeed
+        execute_command(machine, make_dir, true, 'scp_sync_error_make_directory', opts)
+        
+        # For upload, ensure remote directory permissions
         if opts[:direction] == :upload || opts[:direction].nil?
-          execute_command(machine, make_dir, true, 'scp_sync_error_make_directory', opts)
           execute_command(machine, change_ownership, true, 'scp_sync_error_change_ownership_directory', opts)
           execute_command(machine, change_permissions, true, 'scp_sync_error_change_permissions_directory', opts)
-        else
-          # For download, only ensure local directory creation succeeds
-          execute_command(machine, make_dir, true, 'scp_sync_error_make_directory', opts)
         end
 
         # Build and execute the scp command
@@ -94,17 +92,6 @@ module VagrantPlugins
       def self.expand_path(path, machine)
         expanded_path = File.expand_path(path, machine.env.root_path)
         Vagrant::Util::Platform.fs_real_path(expanded_path).to_s
-      end
-
-      def self.build_ssh_options(ssh_info)
-        opts = %w[
-          -o StrictHostKeyChecking=no
-          -o UserKnownHostsFile=/dev/null
-          -o LogLevel=ERROR
-        ]
-        opts << "-o port=#{ssh_info[:port]}"
-        opts << ssh_info[:private_key_path].map { |k| "-i #{k}" }.join(' ')
-        opts
       end
 
       def self.build_scp_options(opts)
@@ -151,9 +138,9 @@ module VagrantPlugins
               stderr: stderr
       end
 
-      private_class_method :expand_path, :build_ssh_options, :build_scp_options,
-                           :build_ssh_command, :build_scp_command, :execute_command,
-                           :execute_command_with_output, :raise_scp_error
+      private_class_method :expand_path, :build_scp_options,
+                          :build_ssh_command, :build_scp_command, :execute_command,
+                          :execute_command_with_output, :raise_scp_error
     end
   end
 end
