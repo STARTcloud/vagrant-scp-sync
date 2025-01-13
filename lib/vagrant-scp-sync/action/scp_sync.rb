@@ -134,7 +134,7 @@ module VagrantPlugins
 
         result = Vagrant::Util::Subprocess.execute('sh', '-c', command)
 
-        raise_scp_error(message_key, command, result.stderr) if raise_error && !result.exit_code.zero?
+        raise_scp_error(command, result.stderr) if raise_error && !result.exit_code.zero?
       end
 
       def self.execute_command_with_output(_machine, command)
@@ -144,7 +144,7 @@ module VagrantPlugins
         result.stdout
       end
 
-      def self.raise_scp_error(message_key, command, stderr)
+      def self.raise_scp_error(command, stderr)
         raise Errors::SyncedFolderScpSyncError,
               command: command,
               stderr: stderr
