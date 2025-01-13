@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.5.19](https://github.com/STARTcloud/vagrant-scp-sync/compare/v0.5.18...v0.5.19) (2025-01-13)
+
+
+### Bug Fixes
+
+* application ([5e7dfdb](https://github.com/STARTcloud/vagrant-scp-sync/commit/5e7dfdb466a633aa1d2019ba109c86571d47450f))
+
 ## [0.5.18](https://github.com/STARTcloud/vagrant-scp-sync/compare/v0.5.17...v0.5.18) (2024-12-23)
 
 
