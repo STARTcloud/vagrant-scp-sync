@@ -12,7 +12,7 @@ module VagrantPlugins
 
       # Generic error class for all SCP sync errors
       class SyncedFolderScpSyncError < VagrantScpSyncError
-        error_key(:scp_sync_error, 'vagrant_scp_sync.errors')
+        error_key(:scp_sync_folder_error, 'vagrant_scp_sync.errors')
       end
 
       # This Class denotes that SCP is not installed
