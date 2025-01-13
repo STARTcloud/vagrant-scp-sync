@@ -145,7 +145,7 @@ module VagrantPlugins
       end
 
       def self.raise_scp_error(message_key, command, stderr)
-        raise Errors.const_get("SyncedFolderScpSync#{message_key.split('_').map(&:capitalize).join}Error"),
+        raise Errors::SyncedFolderScpSyncError,
               command: command,
               stderr: stderr
       end
