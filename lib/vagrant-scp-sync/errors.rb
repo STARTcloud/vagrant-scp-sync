@@ -15,7 +15,7 @@ module VagrantPlugins
         error_key(:scp_sync_error, 'vagrant_scp_sync.errors')
       end
 
-      # This Class denotes that SCP is not installed
+      # This Class denotes that SCP isn't installed
       class SCPNotFound < VagrantScpSyncError
         error_key(:scp_installed_error, 'vagrant_scp_sync.errors')
       end
