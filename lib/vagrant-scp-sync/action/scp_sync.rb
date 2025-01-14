@@ -111,11 +111,11 @@ module VagrantPlugins
       end
 
       def self.build_ssh_command(ssh_opts, command, ssh_info)
-        ['ssh', *ssh_opts, "#{ssh_info[:username]}@#{ssh_info[:host]}", command].join(' ')
+        ['ssh', *ssh_opts, "#{ssh_info[:username]}@#{ssh_info[:host]}", "'#{command}'"].join(' ')
       end
 
       def self.build_scp_command(scp_path, ssh_opts, source, target)
-        [scp_path, '-r', *ssh_opts, source, target].join(' ')
+        [scp_path, '-r', *ssh_opts, "'#{source}'", "'#{target}'"].join(' ')
       end
 
       def self.execute_command(machine, command, raise_error, message_key, opts)
