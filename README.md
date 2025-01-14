@@ -25,7 +25,7 @@ Copying files out of the guest works in the same fashion
 If source is a directory it will be copied recursively.
 
 
-## Example
+## Examples
 
 If you have just one guest, you can copy files to it like this:
 
