@@ -42,8 +42,8 @@ module VagrantPlugins
 
         if opts[:direction] == :upload || opts[:direction].nil?
           # For upload direction
-          target_check = build_ssh_command(ssh_opts, "test -e #{target_files} && echo 'EXISTS' || echo 'NOT_EXISTS'", ssh_info)
-          target_type_check = build_ssh_command(ssh_opts, "test -d #{target_files} && echo 'DIR' || echo 'FILE'", ssh_info)
+          target_check = build_ssh_command(ssh_opts, "test -e '#{target_files}' && echo 'EXISTS' || echo 'NOT_EXISTS'", ssh_info)
+          target_type_check = build_ssh_command(ssh_opts, "test -d '#{target_files}' && echo 'DIR' || echo 'FILE'", ssh_info)
 
           # Check if target exists and its type
           target_exists = execute_command_with_output(machine, target_check).strip == 'EXISTS'
@@ -51,16 +51,16 @@ module VagrantPlugins
 
           # Determine source path based on trailing slash and directory status
           source = if is_source_directory && has_trailing_slash_source
-                     "#{source_files}/*"  # Copy contents of directory
+                     "'#{source_files}/*'"  # Copy contents of directory with quotes
                    else
-                     source_files         # Copy directory itself or single file
+                     "'#{source_files}'"    # Copy directory itself or single file with quotes
                    end
 
           # Determine target path based on existence and trailing slash
-          target_base = "#{ssh_info[:username]}@#{ssh_info[:host]}:#{target_files}"
+          target_base = "#{ssh_info[:username]}@#{ssh_info[:host]}:'#{target_files}'"
           target = if target_exists && target_is_dir && !has_trailing_slash_target
                      # If target exists as directory but no trailing slash, put source inside it
-                     "#{target_base}/#{File.basename(source_files)}"
+                     "#{ssh_info[:username]}@#{ssh_info[:host]}:'#{target_files}/#{File.basename(source_files)}'"
                    else
                      target_base
                    end
@@ -69,21 +69,21 @@ module VagrantPlugins
           target_dir = target_files
           target_dir = File.dirname(target_files) unless target_is_dir || has_trailing_slash_target
 
-          make_dir = build_ssh_command(ssh_opts, "sudo mkdir -p #{target_dir}", ssh_info)
-          change_ownership = build_ssh_command(ssh_opts, "sudo chown -R #{opts[:owner]}:#{opts[:group]} #{target_dir}", ssh_info)
-          change_permissions = build_ssh_command(ssh_opts, "sudo chmod -R 777 #{target_dir}", ssh_info)
-          remove_dir = build_ssh_command(ssh_opts, "sudo rm -rf #{target_files}", ssh_info) if delete
+          make_dir = build_ssh_command(ssh_opts, "sudo mkdir -p '#{target_dir}'", ssh_info)
+          change_ownership = build_ssh_command(ssh_opts, "sudo chown -R #{opts[:owner]}:#{opts[:group]} '#{target_dir}'", ssh_info)
+          change_permissions = build_ssh_command(ssh_opts, "sudo chmod -R 777 '#{target_dir}'", ssh_info)
+          remove_dir = build_ssh_command(ssh_opts, "sudo rm -rf '#{target_files}'", ssh_info) if delete
 
         elsif opts[:direction] == :download
           # For download direction
-          source = "#{ssh_info[:username]}@#{ssh_info[:host]}:#{source_files}"
-          source = "#{source}/*" if has_trailing_slash_source
+          source = "#{ssh_info[:username]}@#{ssh_info[:host]}:'#{source_files}'"
+          source = "#{ssh_info[:username]}@#{ssh_info[:host]}:'#{source_files}/*'" if has_trailing_slash_source
 
           # Create local target directory without sudo
-          target = target_files
+          target = "'#{target_files}'"
           target_dir = target_files
           target_dir = File.dirname(target_files) unless File.directory?(target_files) || has_trailing_slash_target
-          make_dir = "mkdir -p #{target_dir}"
+          make_dir = "mkdir -p '#{target_dir}'"
         end
 
         # Execute commands silently for setup
@@ -115,7 +115,7 @@ module VagrantPlugins
       end
 
       def self.build_scp_command(scp_path, ssh_opts, source, target)
-        [scp_path, '-r', *ssh_opts, "'#{source}'", "'#{target}'"].join(' ')
+        [scp_path, '-r', *ssh_opts, source, target].join(' ')
       end
 
       def self.execute_command(machine, command, raise_error, message_key, opts)
