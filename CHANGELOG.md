@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.5.21](https://github.com/STARTcloud/vagrant-scp-sync/compare/v0.5.20...v0.5.21) (2025-01-14)
+
+
+### Bug Fixes
+
+* include PR to fix paths with spaces ([d4dff56](https://github.com/STARTcloud/vagrant-scp-sync/commit/d4dff5695d7b1962f667a95839e75e74c58ddffd))
+
 ## [0.5.20](https://github.com/STARTcloud/vagrant-scp-sync/compare/v0.5.19...v0.5.20) (2025-01-13)
 
 
