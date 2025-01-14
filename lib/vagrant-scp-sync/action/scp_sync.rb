@@ -51,7 +51,7 @@ module VagrantPlugins
 
           # Determine source path based on trailing slash and directory status
           source = if is_source_directory && has_trailing_slash_source
-                     "'#{source_files}/*'"  # Copy contents of directory with quotes
+                     "'#{source_files}'/*"  # Quote path but leave glob outside quotes
                    else
                      "'#{source_files}'"    # Copy directory itself or single file with quotes
                    end
@@ -77,7 +77,7 @@ module VagrantPlugins
         elsif opts[:direction] == :download
           # For download direction
           source = "#{ssh_info[:username]}@#{ssh_info[:host]}:'#{source_files}'"
-          source = "#{ssh_info[:username]}@#{ssh_info[:host]}:'#{source_files}/*'" if has_trailing_slash_source
+          source = "#{ssh_info[:username]}@#{ssh_info[:host]}:'#{source_files}'/*" if has_trailing_slash_source
 
           # Create local target directory without sudo
           target = "'#{target_files}'"
