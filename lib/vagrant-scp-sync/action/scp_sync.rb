@@ -13,7 +13,7 @@ module VagrantPlugins
           -o LogLevel=ERROR
         ]
         opts << "-o port=#{ssh_info[:port]}"
-        opts << ssh_info[:private_key_path].map { |k| "-i #{k}" }.join(' ')
+        opts << ssh_info[:private_key_path].map { |k| "-i '#{k}'" }.join(' ')
         opts
       end
     end
