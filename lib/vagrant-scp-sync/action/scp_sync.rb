@@ -20,7 +20,7 @@ module VagrantPlugins
 
     # This will SCP the files
     class ScpSyncHelper
-      def self.scp_single(machine, opts)
+      def self.scp_single(machine, opts, scp_path)
         ssh_info = machine.ssh_info
         raise Vagrant::Errors::SSHNotReady if ssh_info.nil?
 
@@ -97,7 +97,7 @@ module VagrantPlugins
         end
 
         # Build and execute the scp command with sync message
-        synchronize = build_scp_command(ssh_opts, source, target)
+        synchronize = build_scp_command(scp_path, ssh_opts, source, target)
         execute_command(machine, synchronize, true, 'scp_sync_folder', opts)
       end
 
@@ -114,9 +114,8 @@ module VagrantPlugins
         ['ssh', *ssh_opts, "#{ssh_info[:username]}@#{ssh_info[:host]}", "'#{command}'"].join(' ')
       end
 
-      def self.build_scp_command(ssh_opts, source, target)
-        # Just use 'scp' and let the shell find it, like we do with ssh
-        ['scp', '-r', *ssh_opts, source, target].join(' ')
+      def self.build_scp_command(scp_path, ssh_opts, source, target)
+        [scp_path, '-r', *ssh_opts, source, target].join(' ')
       end
 
       def self.execute_command(machine, command, raise_error, message_key, opts)
