@@ -42,7 +42,7 @@ module VagrantPlugins
 
         if opts[:direction] == :upload || opts[:direction].nil?
           # For upload direction
-          target_path = opts[:to]  # Use original Unix path
+          target_path = opts[:to]
           target_check = build_ssh_command(ssh_opts, "test -e '#{target_path}' && echo 'EXISTS' || echo 'NOT_EXISTS'", ssh_info)
           target_type_check = build_ssh_command(ssh_opts, "test -d '#{target_path}' && echo 'DIR' || echo 'FILE'", ssh_info)
 
