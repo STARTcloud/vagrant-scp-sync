@@ -77,10 +77,11 @@ module VagrantPlugins
 
         elsif opts[:direction] == :download
           # For download direction
-          source = "#{ssh_info[:username]}@#{ssh_info[:host]}:'#{source_files}'"
-          source = "#{ssh_info[:username]}@#{ssh_info[:host]}:'#{source_files}'/*" if has_trailing_slash_source
+          # Use original path for VM side
+          source = "#{ssh_info[:username]}@#{ssh_info[:host]}:'#{opts[:map]}'"
+          source = "#{ssh_info[:username]}@#{ssh_info[:host]}:'#{opts[:map]}'/*" if has_trailing_slash_source
 
-          # Create local target directory without sudo
+          # Use expanded path for local side
           target = "'#{target_files}'"
           target_dir = target_files
           target_dir = File.dirname(target_files) unless File.directory?(target_files) || has_trailing_slash_target
