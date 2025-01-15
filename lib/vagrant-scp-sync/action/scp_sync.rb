@@ -115,7 +115,8 @@ module VagrantPlugins
       end
 
       def self.build_scp_command(scp_path, ssh_opts, source, target)
-        [scp_path, '-r', *ssh_opts, source, target].join(' ')
+        # Just use 'scp' and let the shell find it, like we do with ssh
+        ['scp', '-r', *ssh_opts, source, target].join(' ')
       end
 
       def self.execute_command(machine, command, raise_error, message_key, opts)
