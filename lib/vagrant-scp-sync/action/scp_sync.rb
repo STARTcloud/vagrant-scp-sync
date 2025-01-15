@@ -42,8 +42,9 @@ module VagrantPlugins
 
         if opts[:direction] == :upload || opts[:direction].nil?
           # For upload direction
-          target_check = build_ssh_command(ssh_opts, "test -e '#{target_files}' && echo 'EXISTS' || echo 'NOT_EXISTS'", ssh_info)
-          target_type_check = build_ssh_command(ssh_opts, "test -d '#{target_files}' && echo 'DIR' || echo 'FILE'", ssh_info)
+          target_path = opts[:to]  # Use original Unix path
+          target_check = build_ssh_command(ssh_opts, "test -e '#{target_path}' && echo 'EXISTS' || echo 'NOT_EXISTS'", ssh_info)
+          target_type_check = build_ssh_command(ssh_opts, "test -d '#{target_path}' && echo 'DIR' || echo 'FILE'", ssh_info)
 
           # Check if target exists and its type
           target_exists = execute_command_with_output(machine, target_check).strip == 'EXISTS'
@@ -57,22 +58,22 @@ module VagrantPlugins
                    end
 
           # Determine target path based on existence and trailing slash
-          target_base = "#{ssh_info[:username]}@#{ssh_info[:host]}:'#{target_files}'"
+          target_base = "#{ssh_info[:username]}@#{ssh_info[:host]}:'#{target_path}'"
           target = if target_exists && target_is_dir && !has_trailing_slash_target
                      # If target exists as directory but no trailing slash, put source inside it
-                     "#{ssh_info[:username]}@#{ssh_info[:host]}:'#{target_files}/#{File.basename(source_files)}'"
+                     "#{ssh_info[:username]}@#{ssh_info[:host]}:'#{target_path}/#{File.basename(source_files)}'"
                    else
                      target_base
                    end
 
           # Prepare remote target directory with proper permissions
-          target_dir = target_files
-          target_dir = File.dirname(target_files) unless target_is_dir || has_trailing_slash_target
+          target_dir = target_path
+          target_dir = File.dirname(target_path) unless target_is_dir || has_trailing_slash_target
 
           make_dir = build_ssh_command(ssh_opts, "sudo mkdir -p '#{target_dir}'", ssh_info)
           change_ownership = build_ssh_command(ssh_opts, "sudo chown -R #{opts[:owner]}:#{opts[:group]} '#{target_dir}'", ssh_info)
           change_permissions = build_ssh_command(ssh_opts, "sudo chmod -R 777 '#{target_dir}'", ssh_info)
-          remove_dir = build_ssh_command(ssh_opts, "sudo rm -rf '#{target_files}'", ssh_info) if delete
+          remove_dir = build_ssh_command(ssh_opts, "sudo rm -rf '#{target_path}'", ssh_info) if delete
 
         elsif opts[:direction] == :download
           # For download direction
@@ -115,6 +116,8 @@ module VagrantPlugins
       end
 
       def self.build_scp_command(scp_path, ssh_opts, source, target)
+        # Quote the scp path if it contains spaces
+        scp_path = "'#{scp_path}'" if scp_path.include?(' ')
         [scp_path, '-r', *ssh_opts, source, target].join(' ')
       end
 
