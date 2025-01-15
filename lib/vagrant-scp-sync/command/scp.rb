@@ -2,7 +2,6 @@
 
 require 'pathname'
 require 'vagrant/util/subprocess'
-require 'vagrant/util/which'
 
 module VagrantPlugins
   module ScpSync
@@ -22,16 +21,14 @@ module VagrantPlugins
             if @source.nil? && @target.nil?
               folders = machine.config.vm.synced_folders
               ssh_info = machine.ssh_info
-              scp_path = Vagrant::Util::Which.which('scp')
               machine.ui.warn(I18n.t('vagrant.scp_ssh_password')) if ssh_info[:private_key_path].empty? && ssh_info[:password]
               folders.each_value do |folder_opts|
                 next unless folder_opts[:type] == :scp
 
-                VagrantPlugins::ScpSync::ScpSyncHelper.scp_single(machine, folder_opts, scp_path)
+                VagrantPlugins::ScpSync::ScpSyncHelper.scp_single(machine, folder_opts)
               end
             else
               ssh_info = machine.ssh_info
-              scp_path = Vagrant::Util::Which.which('scp')
               direction = net_ssh_command(@source)
               source = format_file_path(machine, @source)
               target = format_file_path(machine, @target)
@@ -49,7 +46,7 @@ module VagrantPlugins
                 hostpath: source
               }
 
-              VagrantPlugins::ScpSync::ScpSyncHelper.scp_single(machine, folder_opts, scp_path)
+              VagrantPlugins::ScpSync::ScpSyncHelper.scp_single(machine, folder_opts)
             end
           end
         end
