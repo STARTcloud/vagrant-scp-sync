@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.5.29](https://github.com/STARTcloud/vagrant-scp-sync/compare/v0.5.28...v0.5.29) (2025-01-15)
+
+
+### Bug Fixes
+
+* FIle paths with quotes break things, this is an attempt to workaround/fix that ([85420aa](https://github.com/STARTcloud/vagrant-scp-sync/commit/85420aab0ad2a182c2f866278074e046c6efa1c0))
+
 ## [0.5.28](https://github.com/STARTcloud/vagrant-scp-sync/compare/v0.5.27...v0.5.28) (2025-01-15)
 
 
